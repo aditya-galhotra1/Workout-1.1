@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Daily Workout Tracker</title>
+<style>
+:root{--bg:#f6f7fb;--card:#fff;--text:#14171f;--mute:#6b7280;--line:#e5e7eb;--p:#4f46e5;--s:#0d9488;--ok:#16a34a;color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f1117;--card:#1a1d27;--text:#f1f2f6;--mute:#9aa0ae;--line:#2b3040;--p:#818cf8;--s:#2dd4bf;--ok:#4ade80;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0f1117;--card:#1a1d27;--text:#f1f2f6;--mute:#9aa0ae;--line:#2b3040;--p:#818cf8;--s:#2dd4bf;--ok:#4ade80;color-scheme:dark}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;line-height:1.4}
+main{max-width:760px;margin:0 auto;padding:20px 16px 40px}
+h1{font-size:2rem;margin:4px 0 2px}
+.sub{color:var(--mute);margin:0 0 18px;font-size:1.05rem}
+.top{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px}
+.chip{background:var(--card);border:1px solid var(--line);border-radius:999px;padding:8px 14px;font-weight:700}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px}
+.card h2{margin:0 0 8px;font-size:1.5rem}
+.ringwrap{position:relative;width:170px;height:170px;margin:6px auto 12px}
+.ringwrap svg{width:100%;height:100%;transform:rotate(-90deg)}
+.ring-bg{fill:none;stroke:var(--line);stroke-width:12}
+.ring{fill:none;stroke-width:12;stroke-linecap:round;transition:stroke-dashoffset .4s}
+.big{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.big b{font-size:3rem;line-height:1}
+.big span{color:var(--mute);font-size:.95rem}
+.btns{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+button{font:inherit;font-weight:700;border:0;border-radius:12px;padding:12px 0;cursor:pointer;color:#fff;min-height:46px}
+.pb{background:var(--p)}.sb{background:var(--s);color:#04201d}
+button.ghost{background:transparent;color:var(--text);border:1px solid var(--line)}
+button:active{transform:scale(.96)}
+.row{display:flex;gap:8px;margin-top:10px}
+input{font:inherit;border:1px solid var(--line);background:var(--bg);color:var(--text);border-radius:10px;padding:10px;min-width:0}
+.row input{flex:1}
+.done{color:var(--ok);font-weight:700;text-align:center;min-height:1.4em;margin-top:8px}
+.section{margin-top:16px}
+.chart{display:flex;align-items:flex-end;gap:6px;height:130px;margin-top:10px;overflow-x:auto;padding-bottom:2px}
+.col{flex:1;min-width:22px;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%}
+.bars{display:flex;align-items:flex-end;gap:2px;height:100px;width:100%;justify-content:center}
+.bar{width:9px;border-radius:4px 4px 0 0;min-height:2px}
+.col small{color:var(--mute);font-size:.7rem;margin-top:4px}
+table{width:100%;border-collapse:collapse;font-size:.95rem}
+th,td{text-align:left;padding:8px 6px;border-bottom:1px solid var(--line)}
+th{color:var(--mute);font-weight:600}
+.wrap{overflow-x:auto}
+details summary{cursor:pointer;font-weight:700;font-size:1.1rem}
+.note{color:var(--mute);font-size:.88rem;margin:8px 0 0}
+.legend{display:flex;gap:14px;color:var(--mute);font-size:.85rem;margin-top:6px}
+.dot{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px}
+</style>
+</head>
+<body>
+<main>
+  <h1>💪 Daily Workout Tracker</h1>
+  <p class="sub" id="today"></p>
+  <div class="top">
+    <div class="chip" id="streak">🔥 Streak: 0 days</div>
+    <div class="chip" id="total">📈 All-time: 0</div>
+  </div>
+
+  <div class="grid">
+    <div class="card" id="cardp">
+      <h2>Push-ups</h2>
+      <div class="ringwrap">
+        <svg viewBox="0 0 140 140"><circle class="ring-bg" cx="70" cy="70" r="54"/><circle class="ring" id="ringp" cx="70" cy="70" r="54" stroke="var(--p)"/></svg>
+        <div class="big"><b id="np">0</b><span id="gp">of 100</span></div>
+      </div>
+      <div class="btns">
+        <button class="pb" data-k="p" data-n="1">+1</button>
+        <button class="pb" data-k="p" data-n="5">+5</button>
+        <button class="pb" data-k="p" data-n="10">+10</button>
+        <button class="ghost" data-k="p" data-n="-1">Undo</button>
+      </div>
+      <div class="row"><input id="cp" type="number" inputmode="numeric" placeholder="Custom amount"><button class="pb" style="padding:0 18px" data-custom="p">Add</button></div>
+      <div class="done" id="dp"></div>
+    </div>
+
+    <div class="card" id="cards">
+      <h2>Sit-ups</h2>
+      <div class="ringwrap">
+        <svg viewBox="0 0 140 140"><circle class="ring-bg" cx="70" cy="70" r="54"/><circle class="ring" id="rings" cx="70" cy="70" r="54" stroke="var(--s)"/></svg>
+        <div class="big"><b id="ns">0</b><span id="gs">of 100</span></div>
+      </div>
+      <div class="btns">
+        <button class="sb" data-k="s" data-n="1">+1</button>
+        <button class="sb" data-k="s" data-n="5">+5</button>
+        <button class="sb" data-k="s" data-n="10">+10</button>
+        <button class="ghost" data-k="s" data-n="-1">Undo</button>
+      </div>
+      <div class="row"><input id="cs" type="number" inputmode="numeric" placeholder="Custom amount"><button class="sb" style="padding:0 18px" data-custom="s">Add</button></div>
+      <div class="done" id="ds"></div>
+    </div>
+  </div>
+
+  <div class="card section">
+    <h2>Last 14 days</h2>
+    <div class="legend"><span><i class="dot" style="background:var(--p)"></i>Push-ups</span><span><i class="dot" style="background:var(--s)"></i>Sit-ups</span><span>Bars scale to your goal</span></div>
+    <div class="chart" id="chart"></div>
+  </div>
+
+  <div class="card section">
+    <h2>History</h2>
+    <div class="wrap"><table><thead><tr><th>Date</th><th>Push-ups</th><th>Sit-ups</th><th>Goal hit?</th></tr></thead><tbody id="hist"></tbody></table></div>
+  </div>
+
+  <div class="card section">
+    <details id="setdet">
+      <summary>⚙️ Settings</summary>
+      <div class="row"><input id="goalp" type="number" inputmode="numeric" placeholder="Push-up goal"><input id="goals" type="number" inputmode="numeric" placeholder="Sit-up goal"><button class="ghost" style="padding:0 16px" id="savegoals">Save</button></div>
+      <p class="note" style="margin-top:12px"><b>GitHub sync</b> (saved only on this device)</p>
+      <div class="row"><input id="ghowner" placeholder="GitHub username"><input id="ghrepo" placeholder="Data repo name"></div>
+      <div class="row"><input id="ghbranch" placeholder="Branch (main)"><input id="ghpath" placeholder="File (data.json)"></div>
+      <div class="row"><input id="ghtoken" type="password" placeholder="Fine-grained token" autocomplete="off"><button class="ghost" style="padding:0 16px" id="savegh">Save</button></div>
+      <p class="note" id="syncnote"></p>
+    </details>
+  </div>
+</main>
+
+<script>
+(function(){
+  var KEY='workout-tracker-v1';
+  var data={days:{},goal:{p:100,s:100},updated:0};
+  var GK='wt-gh-v1',cfg={owner:'',repo:'',branch:'main',path:'data.json',token:''};
+  try{Object.assign(cfg,JSON.parse(localStorage.getItem(GK)||'{}'))}catch(e){}
+  var sha=null,loaded=false,busy=false,again=false,OK='☁️ Synced with GitHub';
+  function ready(){return !!(cfg.owner&&cfg.repo&&cfg.token)}
+  function note(t){var n=$('syncnote');if(n)n.textContent=t}
+  function store(){}
+  function save(){data.updated=Date.now();note('☁️ Saving…');push()}
+  function api(method,body){
+    var u='https://api.github.com/repos/'+encodeURIComponent(cfg.owner)+'/'+encodeURIComponent(cfg.repo)+'/contents/'+cfg.path.split('/').map(encodeURIComponent).join('/');
+    var h={'Accept':'application/vnd.github+json','Authorization':'Bearer '+cfg.token};
+    if(method==='GET')u+='?ref='+encodeURIComponent(cfg.branch)+'&t='+Date.now();
+    else h['Content-Type']='application/json';
+    return fetch(u,{method:method,headers:h,body:body?JSON.stringify(body):undefined,cache:'no-store'});
+  }
+  function dec(b64){var bin=atob(b64.replace(/\s/g,''));return new TextDecoder().decode(Uint8Array.from(bin,function(c){return c.charCodeAt(0)}))}
+  function enc(str){var bytes=new TextEncoder().encode(str),bin='';bytes.forEach(function(b){bin+=String.fromCharCode(b)});return btoa(bin)}
+  function err(e){var m=String(e&&e.message||e);note(m==='401'||m==='403'?'⚠️ GitHub rejected the token. Check it in Settings.':m==='404'?'⚠️ Repo or branch not found. Check Settings.':'⚠️ Sync failed. Saved on this device only.')}
+  function pull(){
+    if(!ready())return Promise.resolve();
+    note('☁️ Syncing…');
+    return api('GET').then(function(r){
+      if(r.status===404){sha=null;return null}
+      if(!r.ok)throw new Error(r.status);
+      return r.json();
+    }).then(function(j){
+      loaded=true;
+      if(!j){if(Object.keys(data.days).length)return push();note(OK);return}
+      sha=j.sha;
+      var rem=JSON.parse(dec(j.content));
+      if(rem.updated>data.updated){data.days=rem.days||{};data.goal=rem.goal||data.goal;data.updated=rem.updated;store();render();note(OK)}
+      else if(rem.updated<data.updated)return push();
+      else note(OK);
+    }).catch(err);
+  }
+  function push(){
+    if(!ready())return Promise.resolve();
+    if(busy){again=true;return Promise.resolve()}
+    busy=true;
+    var body={message:'Workout update '+today(),content:enc(JSON.stringify({days:data.days,goal:data.goal,updated:data.updated},null,1)),branch:cfg.branch};
+    if(sha)body.sha=sha;
+    return api('PUT',body).then(function(r){
+      if(r.status===409||r.status===422){busy=false;return pull()}
+      if(!r.ok)throw new Error(r.status);
+      return r.json().then(function(j){sha=j.content.sha;note(OK)});
+    }).catch(err).then(function(){busy=false;if(again){again=false;return push()}});
+  }
+  function initCloud(){
+    $('ghowner').value=cfg.owner;$('ghrepo').value=cfg.repo;$('ghbranch').value=cfg.branch;$('ghpath').value=cfg.path;$('ghtoken').value=cfg.token;
+    if(ready()){pull();document.addEventListener('visibilitychange',function(){if(!document.hidden&&!busy)pull()})}
+    else{note('Add your GitHub details below to sync your data to GitHub.');$('setdet').open=true}
+    $('savegh').onclick=function(){
+      cfg.owner=$('ghowner').value.trim();cfg.repo=$('ghrepo').value.trim();cfg.branch=$('ghbranch').value.trim()||'main';cfg.path=$('ghpath').value.trim()||'data.json';cfg.token=$('ghtoken').value.trim();
+      try{localStorage.setItem(GK,JSON.stringify(cfg))}catch(e){}
+      sha=null;if(ready())pull();else note('Fill in owner, repo and token.');
+    };
+  }
+  function key(dt){return dt.toLocaleDateString('en-CA')}
+  function today(){return key(new Date())}
+  function day(k){return data.days[k]||{p:0,s:0}}
+  var C=2*Math.PI*54;
+  function $(id){return document.getElementById(id)}
+  function hit(k){var d=day(k);return d.p>=data.goal.p&&d.s>=data.goal.s}
+  function add(kind,n){
+    if(!loaded){note(ready()?'Loading from GitHub… try again in a second.':'Add your GitHub details in Settings first.');return}
+    var k=today();var d=data.days[k]||(data.days[k]={p:0,s:0});
+    d[kind]=Math.max(0,d[kind]+n);save();render();
+  }
+  function streak(){
+    var n=0,dt=new Date();
+    if(!hit(key(dt)))dt.setDate(dt.getDate()-1);
+    while(hit(key(dt))){n++;dt.setDate(dt.getDate()-1)}
+    return n;
+  }
+  function render(){
+    var k=today(),d=day(k);
+    $('today').textContent=new Date().toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric'});
+    [['p','Push'],['s','Sit']].forEach(function(x){
+      var kind=x[0],val=d[kind],g=data.goal[kind];
+      $('n'+kind).textContent=val;
+      $('g'+kind).textContent='of '+g;
+      var pct=Math.min(1,val/g);
+      var r=$('ring'+kind);r.style.strokeDasharray=C;r.style.strokeDashoffset=C*(1-pct);
+      $('d'+kind).textContent=val>=g?'✅ Goal reached!':(g-val)+' to go';
+    });
+    var st=streak();$('streak').textContent='🔥 Streak: '+st+' day'+(st===1?'':'s');
+    var tot=0;Object.keys(data.days).forEach(function(q){tot+=data.days[q].p+data.days[q].s});
+    $('total').textContent='📈 All-time reps: '+tot.toLocaleString();
+    // chart
+    var ch='';
+    for(var i=13;i>=0;i--){
+      var dt=new Date();dt.setDate(dt.getDate()-i);var dd=day(key(dt));
+      var hp=Math.min(100,dd.p/data.goal.p*100),hs=Math.min(100,dd.s/data.goal.s*100);
+      ch+='<div class="col"><div class="bars"><div class="bar" style="height:'+hp+'%;background:var(--p)" title="'+dd.p+' push-ups"></div><div class="bar" style="height:'+hs+'%;background:var(--s)" title="'+dd.s+' sit-ups"></div></div><small>'+dt.getDate()+'</small></div>';
+    }
+    $('chart').innerHTML=ch;
+    // history
+    var keys=Object.keys(data.days).sort().reverse().slice(0,30);
+    $('hist').innerHTML=keys.length?keys.map(function(q){
+      var dd=data.days[q];
+      return '<tr><td>'+q+'</td><td>'+dd.p+'</td><td>'+dd.s+'</td><td>'+(hit(q)?'✅':'—')+'</td></tr>';
+    }).join(''):'<tr><td colspan="4" style="color:var(--mute)">No workouts logged yet. Tap +10 to start!</td></tr>';
+    $('goalp').value=data.goal.p;$('goals').value=data.goal.s;
+  }
+  document.addEventListener('click',function(e){
+    var b=e.target.closest('button');if(!b)return;
+    if(b.dataset.k){add(b.dataset.k,parseInt(b.dataset.n,10))}
+    else if(b.dataset.custom){
+      var kind=b.dataset.custom,inp=$('c'+kind),n=parseInt(inp.value,10);
+      if(n>0){add(kind,n);inp.value=''}
+    }
+  });
+  $('savegoals').onclick=function(){
+    var p=parseInt($('goalp').value,10),s=parseInt($('goals').value,10);
+    if(p>0)data.goal.p=p;if(s>0)data.goal.s=s;save();render();
+  };
+  render();
+  initCloud();
+})();
+</script>
+</body>
+</html>
